@@ -4,5 +4,5 @@ permalink: /internal/
 layout: default
 ---
 
-* [编辑器](./editor/)
+* [编辑器](./editor)
 * [图表生成器](./plot.html)
