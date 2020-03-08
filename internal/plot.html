@@ -1,0 +1,28 @@
+---
+permalink: /internal/plot
+layout: page
+---
+
+<img id="gnuplotImage"></img>
+
+<div id="functions">
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="./gnuplot_api.js"></script>
+<script src="./gnuplot_gui.js"></script>
+<script> const PLOTS = {}; </script>
+
+<script src="./plot-scripts/infection-time-series-stacked.js"></script>
+<script src="./plot-scripts/infection-time-series-logy.js"></script>
+
+<script>
+
+for(var name in PLOTS){
+    $("<button>", {"text": name}).data("name", name).click(function(){
+        PLOTS[$(this).data("name")]();
+    }).appendTo("#functions");
+};
+
+</script>
