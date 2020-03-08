@@ -1,31 +1,14 @@
 (function(){
 //////////////////////////////////////////////////////////////////////////////
 
-const ORDER_OF_STATES = [
-    // hardcoded display order
-    "Nordrhein-Westfalen",
-    "Baden-Württemberg",
-    "Bayern",
-    "Berlin",
-    "Niedersachsen",
-    "Hessen",
-    "Rheinland-Pfalz",
-    "Hamburg",
-    "Schleswig-Holstein",
-    "Mecklenburg-Vorpommern",
-    "Brandenburg",
-    "Bremen",
-    "Saarland",
-    "Sachsen",
-    "Thüringen",
-    "Sachsen-Anhalt",
-];
+var ORDER_OF_STATES = [];
 const CUTOFF_DIVISION = 20;
 
 function normalizeStateName(n){
     n = n.replace("-", "").replace(" ", "").toLowerCase();
-    n = n.replace("ü", "ue");
+    n = n.replace("ü", "ue").replace("ä", "ae").replace("ö", "oe");
     return {
+        // Deutschland
         "nordrheinwestfalen": "Nordrhein-Westfalen",
         "badenwuerttemberg" : "Baden-Württemberg",
         "bayern": "Bayern",
@@ -42,6 +25,18 @@ function normalizeStateName(n){
         "schleswigholstein": "Schleswig-Holstein",
         "thueringen": "Thüringen",
         "sachsenanhalt": "Sachsen-Anhalt",
+
+        // Oesterreich
+        "vorarlberg": "Vorarlberg",
+        "kaernten": "Kärnten",
+        "burgenland": "Burgenland",
+        "oberoesterreich": "Oberösterreich",
+        "niederoesterreich": "Niederösterreich",
+        "wien": "Wien",
+        "tirol": "Tirol",
+        "salzburg": "Salzburg",
+        "steiermark": "Steiermark",
+
     }[n];
 }
 
@@ -91,6 +86,9 @@ function stackedCSVGen(input){
        which is good for stacked chart.*/
 
     var data = {};
+
+    ORDER_OF_STATES = [];
+
     input.split("\n").forEach(function(row){
         var cells = row.trim().split(",");
         if(cells.length < 4) return;
@@ -100,6 +98,9 @@ function stackedCSVGen(input){
         if(statename == "Repatriierte" || statename == "sum" || statename == "state") return;
         statename = normalizeStateName(statename);
         if(!statename) throw Error("State unknown: " + row);
+        if(ORDER_OF_STATES.indexOf(statename) < 0){
+            ORDER_OF_STATES.push(statename);
+        }
 
         datetime = new Date(datetime + 'Z').getTime() / 1000;
         if(isNaN(datetime)) return;
@@ -110,6 +111,16 @@ function stackedCSVGen(input){
 
     var timestamps = Object.keys(data);
 
+    timestamps.sort();
+    var newestTimestamp = timestamps[timestamps.length-1];
+
+    // determine order of states, lower index -> larger number
+    var newestData = data[newestTimestamp];
+    ORDER_OF_STATES.sort(function(state1, state2){
+        var c1 = (newestData[state1] !== undefined ? newestData[state1] : 0),
+            c2 = (newestData[state2] !== undefined ? newestData[state2] : 0);
+        return c1 < c2;
+    });
 
     var output = [];
     var cutoffState = findCutoffState(data);
@@ -151,17 +162,20 @@ function getColor(){
         "#9900FF",
         "#FFCC00",
         "#0000FF",
+        "#00FFFF",
+        "#FF00FF",
     ];
     colorId += 1;
     return colors[colorId % colors.length];
 }
+function resetColor(){ colorId = -1; }
 
 
 
-
-PLOTS["德国感染人数统计图(堆积)"] = async function(){
+async function doPlot(url, countryName){
+    resetColor();
     
-    const dataset = await $.get("https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-de.csv");
+    const dataset = await $.get(url);
 
     const files = {
         // data files being fed to GNUPLOT
@@ -175,7 +189,6 @@ PLOTS["德国感染人数统计图(堆积)"] = async function(){
 
         set datafile separator ","
 
-        set title "德国各州 COVID-19 感染人数"
         set timefmt "%s"
         set xdata time
         set format x "%m月\\n%d日"
@@ -187,6 +200,7 @@ PLOTS["德国感染人数统计图(堆积)"] = async function(){
         set grid ytics xtics
         set grid front
     `;
+    instruction += "set title \"" + countryName + "各州 COVID-19 感染人数\"\n";
 
     var plotcmd = [];
 
@@ -213,7 +227,15 @@ PLOTS["德国感染人数统计图(堆积)"] = async function(){
     GNUPLOT_UPDATE(files, instruction); 
 };
 
+PLOTS["德国感染人数统计图(堆积)"] = async () => await doPlot(
+    "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-de.csv",
+    "德国"
+);
 
+PLOTS["奥地利感染人数统计图(堆积)"] = async () => await doPlot(
+    "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-at.csv",
+    "奥地利"
+);
 
 
 
