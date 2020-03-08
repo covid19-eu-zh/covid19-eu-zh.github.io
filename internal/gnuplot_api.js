@@ -1,3 +1,5 @@
+define([], function(){
+//////////////////////////////////////////////////////////////////////////////
 var gnuplot = {
     
     init: function(jsname) {
@@ -95,3 +97,9 @@ var gnuplot = {
         this.transaction++;
     }
 };
+
+
+
+
+return gnuplot;
+});

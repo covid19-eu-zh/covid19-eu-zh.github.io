@@ -8,21 +8,33 @@ layout: page
 <div id="functions">
 </div>
 
-
-<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-<script src="./gnuplot_api.js"></script>
-<script src="./gnuplot_gui.js"></script>
-<script> const PLOTS = {}; </script>
-
-<script src="./plot-scripts/infection-time-series-stacked.js"></script>
-<script src="./plot-scripts/infection-time-series-logy.js"></script>
-
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"
+    integrity="sha256-1fEPhSsRKlFKGfK3eO710tEweHh1fwokU5wFGDHO+vg="
+    crossorigin="anonymous"
+></script>
 <script>
+requirejs.config({
+    paths: {
+        "jquery": "../js/jquery-3.4.1.min",
+    }
+});
 
-for(var name in PLOTS){
-    $("<button>", {"text": name}).data("name", name).click(function(){
-        PLOTS[$(this).data("name")]();
-    }).appendTo("#functions");
-};
+require([
+    "jquery",
+    "plots",
+], function(
+    $,
+    PLOTS
+){
+
+
+    for(var name in PLOTS){
+        $("<button>", {"text": name}).data("name", name).click(function(){
+            PLOTS[$(this).data("name")]();
+        }).appendTo($("<div>").appendTo("#functions"));
+    };
+
+});
 
 </script>

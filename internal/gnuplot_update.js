@@ -1,6 +1,5 @@
-/**
- * 
- */
+define(["gnuplot_api"], function(gnuplot){
+//////////////////////////////////////////////////////////////////////////////
 
 gnuplot.init('gnuplot.js');
 gnuplot.lastListing = [];
@@ -114,3 +113,10 @@ gnuplot.onError = function(text) {
 	$("#gnuplotOut").html(gnuplot.text);
 };
 
+
+
+
+return GNUPLOT_UPDATE;
+
+//////////////////////////////////////////////////////////////////////////////
+});

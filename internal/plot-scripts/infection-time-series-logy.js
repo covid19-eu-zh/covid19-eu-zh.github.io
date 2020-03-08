@@ -1,62 +1,13 @@
-(function(){
+define([
+    "gnuplot_update",
+    "plot-scripts/utils",
+], function(
+    GNUPLOT_UPDATE,
+    utils
+){
 //////////////////////////////////////////////////////////////////////////////
 
-var ORDER_OF_STATES = [
-    /* // hardcoded display order
-    "Nordrhein-Westfalen",
-    "Baden-Württemberg",
-    "Bayern",
-    "Berlin",
-    "Niedersachsen",
-    "Hessen",
-    "Rheinland-Pfalz",
-    "Hamburg",
-    "Schleswig-Holstein",
-    "Mecklenburg-Vorpommern",
-    "Brandenburg",
-    "Bremen",
-    "Saarland",
-    "Sachsen",
-    "Thüringen",
-    "Sachsen-Anhalt",*/
-];
-
-function normalizeStateName(n){
-    n = n.replace("-", "").replace(" ", "").toLowerCase();
-    n = n.replace("ü", "ue").replace("ä", "ae").replace("ö", "oe");
-    return {
-        // Deutschland
-        "nordrheinwestfalen": "Nordrhein-Westfalen",
-        "badenwuerttemberg" : "Baden-Württemberg",
-        "bayern": "Bayern",
-        "berlin": "Berlin",
-        "niedersachsen": "Niedersachsen",
-        "brandenburg": "Brandenburg",
-        "bremen": "Bremen",
-        "hamburg": "Hamburg",
-        "hessen": "Hessen",
-        "mecklenburgvorpommern": "Mecklenburg-Vorpommern",
-        "rheinlandpfalz": "Rheinland-Pfalz",
-        "saarland": "Saarland",
-        "sachsen": "Sachsen",
-        "schleswigholstein": "Schleswig-Holstein",
-        "thueringen": "Thüringen",
-        "sachsenanhalt": "Sachsen-Anhalt",
-
-        // Oesterreich
-        "vorarlberg": "Vorarlberg",
-        "kaernten": "Kärnten",
-        "burgenland": "Burgenland",
-        "oberoesterreich": "Oberösterreich",
-        "niederoesterreich": "Niederösterreich",
-        "wien": "Wien",
-        "tirol": "Tirol",
-        "salzburg": "Salzburg",
-        "steiermark": "Steiermark",
-
-    }[n];
-}
-
+var ORDER_OF_STATES = [];
 
 
 function CSVGen(input){
@@ -73,7 +24,7 @@ function CSVGen(input){
         var datetime = cells[3], statename = cells[1];
 
         if(statename == "Repatriierte" || statename == "sum" || statename == "state") return;
-        statename = normalizeStateName(statename);
+        statename = utils.normalizeStateName(statename);
         if(!statename) throw Error("State unknown: " + row);
         if(ORDER_OF_STATES.indexOf(statename) < 0){
             ORDER_OF_STATES.push(statename);
@@ -131,29 +82,8 @@ function CSVGen(input){
 
 
 
-var colorId = -1;
-function getColor(){
-    const colors = [
-        "#FF0000",
-        "#00FF00",
-        "#9900FF",
-        "#FFCC00",
-        "#0000FF",
-        "#00FFFF",
-        "#FF00FF",
-    ];
-    colorId += 1;
-    return colors[colorId % colors.length];
-}
-function resetColor(){ colorId = -1; }
-
-
-
-
-
-
 async function doPlot(url, countryName){
-    resetColor();
+    utils.getColor.reset();
     
     const dataset = await $.get(url);
 
@@ -190,7 +120,7 @@ async function doPlot(url, countryName){
         plotcmd.push([
             "\"data.csv\"",
             "using 1:" + (i+2) + " with lines",
-            "lc rgb '" + getColor() + "'",
+            "lc rgb '" + utils.getColor() + "'",
             "title \"" + ORDER_OF_STATES[i] + "\"",
         ].join(" "));
     }
@@ -204,17 +134,22 @@ async function doPlot(url, countryName){
 };
 
 
-PLOTS["德国感染人数统计图(Y-对数)"] = async () => await doPlot(
-    "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-de.csv",
-    "德国"
-);
-
-PLOTS["奥地利感染人数统计图(Y-对数)"] = async () => await doPlot(
-    "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-at.csv",
-    "奥地利"
-);
 
 
+
+return function(PLOTS){
+    
+    PLOTS["德国感染人数统计图(Y-对数)"] = async () => await doPlot(
+        "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-de.csv",
+        "德国"
+    );
+
+    PLOTS["奥地利感染人数统计图(Y-对数)"] = async () => await doPlot(
+        "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-at.csv",
+        "奥地利"
+    );
+
+};
 
 //////////////////////////////////////////////////////////////////////////////
-})();
+});
