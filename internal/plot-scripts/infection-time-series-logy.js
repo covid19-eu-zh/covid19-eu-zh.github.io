@@ -70,14 +70,14 @@ function CSVGen(input, datasetType){
 
 
 
-async function doPlot(url, countryName, datasetType){
+async function doPlot(options){ //url, countryName, datasetType){
     utils.getColor.reset();
     
-    const dataset = await $.get(url);
+    const dataset = await $.get(options.url);
 
     const files = {
         // data files being fed to GNUPLOT
-        "data.csv": CSVGen(dataset, datasetType)
+        "data.csv": CSVGen(dataset, options.datasetType)
     };
 
 
@@ -102,7 +102,7 @@ async function doPlot(url, countryName, datasetType){
         set mytics 10
     `;
 
-    instruction += "set title \"" + countryName + "各州 COVID-19 感染人数\"\n";
+    instruction += "set title \"" + options.countryName + "各" + options.regionType + " COVID-19 感染人数\"\n";
 
     var plotcmd = [];
 
@@ -130,23 +130,26 @@ async function doPlot(url, countryName, datasetType){
 
 return function(PLOTS){
     
-    PLOTS["德国感染人数统计图(Y-对数)"] = async () => await doPlot(
-        "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-de.csv",
-        "德国",
-        "covid19-eu-zh"
-    );
+    PLOTS["德国感染人数统计图(Y-对数)"] = async () => await doPlot({
+        url: "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-de.csv",
+        countryName: "德国",
+        regionType: "州",
+        datasetType: "covid19-eu-zh",
+    });
 
-    PLOTS["奥地利感染人数统计图(Y-对数)"] = async () => await doPlot(
-        "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-at.csv",
-        "奥地利",
-        "covid19-eu-zh"
-    );
+    PLOTS["奥地利感染人数统计图(Y-对数)"] = async () => await doPlot({
+        url: "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-at.csv",
+        countryName: "奥地利",
+        regionType: "州",
+        datasetType: "covid19-eu-zh",
+    });
 
-    PLOTS["意大利感染人数统计图(Y-对数)"] = async () => await doPlot(
-        "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province.csv",
-        "意大利",
-        "pcm-dpc"
-    );
+    PLOTS["意大利感染人数统计图(Y-对数)"] = async () => await doPlot({
+        url: "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province.csv",
+        countryName: "意大利",
+        regionType: "大区",
+        datasetType: "pcm-dpc",
+    });
 };
 
 //////////////////////////////////////////////////////////////////////////////
