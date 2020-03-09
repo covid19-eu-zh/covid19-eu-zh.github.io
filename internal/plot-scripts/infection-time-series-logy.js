@@ -38,7 +38,7 @@ function CSVGen(input, datasetType){
     ORDER_OF_STATES.sort(function(state1, state2){
         var c1 = (newestData[state1] !== undefined ? newestData[state1] : 0),
             c2 = (newestData[state2] !== undefined ? newestData[state2] : 0);
-        return c1 < c2;
+        return c2 - c1;
     });
 
     var CUTOFF_STATE = ORDER_OF_STATES[ORDER_OF_STATES.length-1];
@@ -49,7 +49,6 @@ function CSVGen(input, datasetType){
             break;
         }
     }
-
 
     var output = [];
 
