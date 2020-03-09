@@ -3,8 +3,17 @@ permalink: /internal/plot.html
 layout: page
 ---
 
-<img id="gnuplotImage"></img>
+<button id="saveimage" disabled="disabled">保存为图片</button>
 
+<div>
+    <img id="gnuplotImage"></img>
+    <canvas id="gnuplotCanvas" style="display:none"></canvas>
+    <img id="gnuplotRaster" style="display:none"></img>
+</div>
+
+<br />
+<hr />
+<br />
 <div id="functions">
 </div>
 
@@ -25,15 +34,28 @@ require([
     "plots",
 ], function(
     $,
-    PLOTS
+    PLOTS,
 ){
-
 
     for(var name in PLOTS){
         $("<button>", {"text": name}).data("name", name).click(function(){
             PLOTS[$(this).data("name")]();
         }).appendTo($("<div>").appendTo("#functions"));
     };
+
+    function downloadURI(uri, name) {
+      var link = document.createElement("a");
+      link.download = name;
+      link.href = uri;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      delete link;
+    }
+    
+    $("#saveimage").click(function(){
+        downloadURI($("#gnuplotRaster")[0].src, "download.png");
+    });
 
 });
 

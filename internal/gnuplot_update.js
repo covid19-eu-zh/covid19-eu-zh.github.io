@@ -42,6 +42,7 @@ function updateListing(updateImages) {
             ".svg": "image/svg+xml",
         };
 
+        $("#saveimage").attr("disabled", true);
         for(var nameidx in l){
             var name = l[nameidx];
             for(var nameext in filetypes){
@@ -54,9 +55,31 @@ function updateListing(updateImages) {
                         return;
                     }
                     toGnuplotImage(e.content, filetypes[nameext]);
-                });
+                            
+                    var gpi = $("#gnuplotImage")[0];
+                    var canv = $("#gnuplotCanvas")[0];
+                    //gpi.style.width="100%";
+                    
+                    setTimeout(function() {
+                        canv.width = gpi.width;
+                        canv.height = gpi.height;
+                
+                        setTimeout(function() {
+                            var ctx = canv.getContext("2d");
 
-	    }
+                            ctx.fillStyle = "#FFFFFF";
+                            ctx.fillRect(0, 0, canv.width, canv.height);
+
+                            ctx.drawImage(gpi, 0, 0);
+                            $("#gnuplotRaster")[0].src = canv.toDataURL("image/png");
+                            gpi.style.width="100%";
+
+                            $("#saveimage").removeAttr("disabled");
+                        }, 200)
+                    }, 200);
+
+                });
+	    };
 	};
     });
 }
