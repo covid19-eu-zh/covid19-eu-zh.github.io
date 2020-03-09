@@ -163,15 +163,19 @@ async function doPlot(options){ // url, countryName, datasetType){
 
 
 return function(PLOTS){
+
+    const baseurl = "https://covid19-eu-data-cache.now.sh/";
+
     PLOTS["德国感染人数统计图(堆积)"] = async () => await doPlot({
-        url: "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-de.csv",
+        //url: "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-de.csv",
+        url: baseurl + "covid-19-de.csv",
         countryName: "德国",
         regionType: "州",
         datasetType: "covid19-eu-zh",
     });
 
     PLOTS["奥地利感染人数统计图(堆积)"] = async () => await doPlot({
-        url: "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-at.csv",
+        url: baseurl + "covid-19-at.csv",
         countryName: "奥地利",
         regionType: "州",
         datasetType: "covid19-eu-zh",
