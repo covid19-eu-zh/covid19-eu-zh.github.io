@@ -50,35 +50,15 @@ function trimStackedRowData(stackedNumbers){
 
 
 
-function stackedCSVGen(input){
+function stackedCSVGen(input, datasetType){
     /* Format the data collected from project "covid19-eu-data", as:
         datetime,state,total_of_state_1,total_of_state_1+2,total_of_state_1+2+3
     
        which is good for stacked chart.*/
 
-    var data = {};
-
-    ORDER_OF_STATES = [];
-
-    input.split("\n").forEach(function(row){
-        var cells = row.trim().split(",");
-        if(cells.length < 4) return;
-
-        var datetime = cells[3], statename = cells[1];
-
-        if(statename == "Repatriierte" || statename == "sum" || statename == "state") return;
-        statename = utils.normalizeStateName(statename);
-        if(!statename) throw Error("State unknown: " + row);
-        if(ORDER_OF_STATES.indexOf(statename) < 0){
-            ORDER_OF_STATES.push(statename);
-        }
-
-        datetime = new Date(datetime + 'Z').getTime() / 1000;
-        if(isNaN(datetime)) return;
-
-        if(!data[datetime]) data[datetime] = {};
-        data[datetime][statename] = parseInt(cells[2]);
-    });
+    var parsed = utils.parseCasesOfStatesCSV(input, datasetType);
+    var data = parsed[0];
+    ORDER_OF_STATES = parsed[1];
 
     var timestamps = Object.keys(data);
 
@@ -126,14 +106,14 @@ function stackedCSVGen(input){
 
 
 
-async function doPlot(url, countryName){
+async function doPlot(url, countryName, datasetType){
     utils.getColor.reset();
     
     const dataset = await $.get(url);
 
     const files = {
         // data files being fed to GNUPLOT
-        "data.csv": stackedCSVGen(dataset)
+        "data.csv": stackedCSVGen(dataset, datasetType)
     };
 
 
@@ -185,12 +165,20 @@ async function doPlot(url, countryName){
 return function(PLOTS){
     PLOTS["德国感染人数统计图(堆积)"] = async () => await doPlot(
         "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-de.csv",
-        "德国"
+        "德国",
+        "covid19-eu-zh"
     );
 
     PLOTS["奥地利感染人数统计图(堆积)"] = async () => await doPlot(
         "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-at.csv",
-        "奥地利"
+        "奥地利",
+        "covid19-eu-zh"
+    );
+
+    PLOTS["意大利感染人数统计图(堆积)"] = async () => await doPlot(
+        "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province.csv",
+        "意大利",
+        "pcm-dpc"
     );
 };
 

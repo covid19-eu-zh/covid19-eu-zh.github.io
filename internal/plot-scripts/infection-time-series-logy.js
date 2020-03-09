@@ -8,40 +8,26 @@ define([
 //////////////////////////////////////////////////////////////////////////////
 
 var ORDER_OF_STATES = [];
+var OUTPUT_COLS = 0;
 
-
-function CSVGen(input){
+function CSVGen(input, datasetType){
     var data = {};
 
+
+    var parsed = utils.parseCasesOfStatesCSV(input, datasetType);
+    var data = parsed[0];
+    ORDER_OF_STATES = parsed[1];
+
     var MAX = 0;
-
-    ORDER_OF_STATES = [];
-
-    input.split("\n").forEach(function(row){
-        var cells = row.trim().split(",");
-        if(cells.length < 4) return;
-
-        var datetime = cells[3], statename = cells[1];
-
-        if(statename == "Repatriierte" || statename == "sum" || statename == "state") return;
-        statename = utils.normalizeStateName(statename);
-        if(!statename) throw Error("State unknown: " + row);
-        if(ORDER_OF_STATES.indexOf(statename) < 0){
-            ORDER_OF_STATES.push(statename);
-        }
-
-        datetime = new Date(datetime + 'Z').getTime() / 1000;
-        if(isNaN(datetime)) return;
-
-        if(!data[datetime]) data[datetime] = {};
-        data[datetime][statename] = parseInt(cells[2]);
-
-        if(!isNaN(data[datetime][statename])){
-            if(MAX < data[datetime][statename]){
-                MAX = data[datetime][statename];
+    for(var datetime in data){
+        for(var statename in data[datetime]){
+            if(!isNaN(data[datetime][statename])){
+                if(MAX < data[datetime][statename]){
+                    MAX = data[datetime][statename];
+                }
             }
         }
-    });
+    }
 
     var timestamps = Object.keys(data);
     timestamps.sort();
@@ -55,7 +41,14 @@ function CSVGen(input){
         return c1 < c2;
     });
 
-
+    var CUTOFF_STATE = ORDER_OF_STATES[ORDER_OF_STATES.length-1];
+    for(var i=0; i<ORDER_OF_STATES.length; i++){
+        if(data[newestTimestamp][ORDER_OF_STATES[i]] < MAX / 20){
+            CUTOFF_STATE = ORDER_OF_STATES[i];
+            OUTPUT_COLS = i + 1;
+            break;
+        }
+    }
 
 
     var output = [];
@@ -64,32 +57,27 @@ function CSVGen(input){
         // write a line to output
         var outputRowStr = datetime.toString();
         for(var i=0; i<ORDER_OF_STATES.length; i++){
-            if(data[newestTimestamp][ORDER_OF_STATES[i]] < MAX / 20){
-                outputRowStr += ",x";
-            } else {
-                outputRowStr += "," + data[datetime][ORDER_OF_STATES[i]];
-            }
+            outputRowStr += "," + data[datetime][ORDER_OF_STATES[i]];
+            if(CUTOFF_STATE == ORDER_OF_STATES[i]) break;
         }
         output.push(outputRowStr);
 
     }
 
     return output.join("\n");
-    // Germany have 16 federal states:
-    //    datetime,state_1,state_2,...
 }
 
 
 
 
-async function doPlot(url, countryName){
+async function doPlot(url, countryName, datasetType){
     utils.getColor.reset();
     
     const dataset = await $.get(url);
 
     const files = {
         // data files being fed to GNUPLOT
-        "data.csv": CSVGen(dataset)
+        "data.csv": CSVGen(dataset, datasetType)
     };
 
 
@@ -104,23 +92,26 @@ async function doPlot(url, countryName){
         set format x "%m月\\n%d日"
         set style fill solid 1.0
 
-        set grid mytics xtics
+
+        set logscale yy2
+
+        set key inside left top maxcols 1
+        set ytics mirror
+        set y2tics
+        set grid front mytics xtics
         set mytics 10
-
-        set logscale y
-
-        set key outside center right
     `;
 
     instruction += "set title \"" + countryName + "各州 COVID-19 感染人数\"\n";
 
     var plotcmd = [];
 
-    for(var i=0; i<ORDER_OF_STATES.length; i++){
+    for(var i=0; i<OUTPUT_COLS; i++){
         plotcmd.push([
             "\"data.csv\"",
-            "using 1:" + (i+2) + " with lines",
+            "using 1:" + (i+2) + " with linespoints",
             "lc rgb '" + utils.getColor() + "'",
+            "lw 2",
             "title \"" + ORDER_OF_STATES[i] + "\"",
         ].join(" "));
     }
@@ -141,14 +132,21 @@ return function(PLOTS){
     
     PLOTS["德国感染人数统计图(Y-对数)"] = async () => await doPlot(
         "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-de.csv",
-        "德国"
+        "德国",
+        "covid19-eu-zh"
     );
 
     PLOTS["奥地利感染人数统计图(Y-对数)"] = async () => await doPlot(
         "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-at.csv",
-        "奥地利"
+        "奥地利",
+        "covid19-eu-zh"
     );
 
+    PLOTS["意大利感染人数统计图(Y-对数)"] = async () => await doPlot(
+        "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province.csv",
+        "意大利",
+        "pcm-dpc"
+    );
 };
 
 //////////////////////////////////////////////////////////////////////////////
