@@ -7,16 +7,48 @@
 
 # Site settings
 title: 新冠疫情欧洲中文台
-email: your-email@domain.com
+email: ''
 description: > # this means to ignore newlines until "baseurl:"
   Write an awesome description for your new site here. You can edit this
   line in _config.yml. It will appear in your document head meta (for
   Google search results) and in your feed.xml site description.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://covid19-zh-eu.github.io" # the base hostname & protocol for your site
+author: covid19-zh-eu
 
 telegram_username: covid19_eu_zh_c
-github_username:  jekyll
+github_username:  covid19-eu-zh
 
 # Build settings
 markdown: kramdown
+
+# Markdown Processing
+kramdown:
+  input: GFM
+  hard_wrap: false
+  auto_ids: true
+  footnote_nr: 1
+  entity_output: as_char
+  toc_levels: 1..6
+  smart_quotes: lsquo,rsquo,ldquo,rdquo
+  enable_coderay: false
+
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-gist
+  - jemoji
+
+# mimic GitHub Pages with --safe
+whitelist:
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-gist
+  - jekyll-feed
+  - jemoji
+
+
+exclude: ['README.md','README-minima.md','History.markdown', 'Gemfile.lock', 'Gemfile','assets/mermaid/www']
