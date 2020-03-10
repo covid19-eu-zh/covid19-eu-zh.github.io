@@ -1,0 +1,20 @@
+# Site navigation links
+main:
+
+- title: "编辑工具"
+  url: /internal/
+  excerpt: "DataHerb Ecosystem"
+  subnav:
+    - title: "编辑器"
+      url: /internal/editor
+      excerpt: "编辑用的编辑器"
+    - title: "统计图生成器"
+      url: /internal/plot
+      excerpt: "编辑用的编辑器"
+- title: "社区"
+  url: /community/
+  excerpt: "社区链接"
+  subnav:
+    - title: "Telegram"
+      url: https://t.me/covid19_eu_zh_c
+      excerpt: "Telegram Channel"

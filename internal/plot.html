@@ -1,6 +1,8 @@
 ---
+title: "统计图生成器"
 permalink: /internal/plot.html
 layout: page
+exclude: true
 ---
 
 <button id="saveimage" disabled="disabled">保存为图片</button>
@@ -52,7 +54,7 @@ require([
       document.body.removeChild(link);
       delete link;
     }
-    
+
     $("#saveimage").click(function(){
         downloadURI($("#gnuplotRaster")[0].src, "download.png");
     });

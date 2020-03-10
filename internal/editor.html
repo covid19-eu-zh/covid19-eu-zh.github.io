@@ -1,6 +1,8 @@
 ---
+title: "编辑器"
 permalink: /internal/editor
 layout: page
+exclude: true
 ---
 
 <style>
@@ -84,7 +86,7 @@ h3{
 
     var simplemde = new SimpleMDE({
         element: document.getElementById("editor"),
-        
+
         promptURLs: true,
         spellChecker: false,
 
@@ -107,7 +109,7 @@ h3{
         var output = [];
 
         function isSymbol(i){
-            return "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~，。！（）「」“”·《》【】：；—\n\r".indexOf(i) >= 0; 
+            return "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~，。！（）「」“”·《》【】：；—\n\r".indexOf(i) >= 0;
         }
 
         function isCJK(i){
@@ -137,14 +139,14 @@ h3{
                     buf += c;
                 } else {
                     pushBuf();
-                    
+
                     if(lastCharWasSymbol){
                         newChunk = false; // next chunk is NOT separated by preceding space
                     } else {
                         newChunk = true;
                     }
                     //console.log("----- separation, next: ", newChunk);
-                    
+
                     buf = c;
                     copyingCJK = !copyingCJK;
                 }
@@ -165,7 +167,7 @@ h3{
     $("#generate,#output").click(function(){
         var text = simplemde.value();
         text = addSpacesBetweenASCIIandCJK(text);
-        
+
         var addtags = [];
         $("#tags").find(".tagchoosen").each(function(){
             addtags.push("#" + $(this).text());

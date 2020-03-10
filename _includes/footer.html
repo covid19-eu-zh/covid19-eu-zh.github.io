@@ -1,38 +1,29 @@
-<footer class="site-footer">
+<footer class="footer">
+  <data class="u-url" href="{{ "/" | relative_url }}"></data>
+  <div class="container">
+    <div class="content has-text-centered">
+      <p>
+        <strong>{{ site.title_fancy | escape }}</strong> by <a>
+          {%- if site.author -%}
+          {{ site.author | escape }}
+        {%- else -%}
+          Anonymous
+        {%- endif -%}
+       </a>.
+       <span class="icon">
+         <a href="https://github.com/{{site.github_username}}"><i class="fab fa-github"></i></a>
+       </span>
+       <span class="icon">
+        <a href="https://t.me/{{site.telegram_username}}"><i class="fab fa-telegram"></i></a>
+      </span>
+       <span class="icon">
+      <a href="{{ "/feed.xml" | relative_url }}"><i class="fas fa-rss"></i></a>
+       </span>
+       <span class="icon">
+      <a href="{{ "/typography" | relative_url }}"><i class="far fa-file-alt"></i></a>
+       </span>
+      </p>
 
-  <div class="wrapper">
-
-    <h2 class="footer-heading">{{ site.title }}</h2>
-
-    <div class="footer-col-wrapper">
-      <div class="footer-col footer-col-1">
-        <ul class="contact-list">
-          <li>{{ site.title }}</li>
-          <li><a href="mailto:{{ site.email }}">{{ site.email }}</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-col footer-col-2">
-        <ul class="social-media-list">
-          {% if site.github_username %}
-          <li>
-            {% include icon-github.html username=site.github_username %}
-          </li>
-          {% endif %}
-
-          {% if site.telegram_username %}
-          <li>
-            {% include icon-telegram.html username=site.telegram_username %}
-          </li>
-          {% endif %}
-        </ul>
-      </div>
-
-      <div class="footer-col footer-col-3">
-        <p>{{ site.description }}</p>
-      </div>
     </div>
-
   </div>
-
 </footer>

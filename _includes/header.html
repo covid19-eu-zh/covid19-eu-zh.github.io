@@ -1,27 +1,94 @@
-<header class="site-header">
+<header class="site-header" role="banner">
+  {%- assign default_paths = site.pages | map: "path" -%} {%- assign page_paths = site.header_pages | default: default_paths -%}
 
-  <div class="wrapper">
+  <section class="hero is-primary is-medium">
+    <!-- Hero head: will stick at the top -->
+    <!-- <div class="hero-head"> -->
+      <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="container">
+          <div class="navbar-brand">
+            <a class="navbar-item has-text-weight-bold" rel="author" href="{{ "/" | relative_url }}">{{ site.title | escape }}</a>
+            <!-- <img src="https://bulma.io/images/bulma-type-white.png" alt="Logo"> -->
+            <span class="navbar-burger burger" data-target="navbarMenuHeroA">
+            <span></span>
+            <span></span>
+            <span></span>
+            </span>
+          </div>
+          <div id="navbarMenuHeroA" class="navbar-menu">
+            <div class="navbar-end">
 
-    <a class="site-title" href="{{ site.baseurl }}/">{{ site.title }}</a>
+              <a class="navbar-item{% if page.url == '/' %} is-active{% endif %} has-text-weight-bold" href="/"><i class="fas fa-home"></i></a>
 
-    <nav class="site-nav">
-      <a href="#" class="menu-icon">
-        <svg viewBox="0 0 18 15">
-          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
-          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
-          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
-        </svg>
-      </a>
+              {% for link in site.data.navigation.main %}
+              {% if link.url contains 'http' or 'https' %}
+              {% assign domain = '' %}
+              {% else %}
+              {% assign domain = site.url %}
+              {% endif %}
+              {% if link.subnav == blank %}
+              <a class="navbar-item{% if page.url == link.url %} is-active{% endif %} has-text-weight-bold" href="{{ domain }}{{ link.url }}" {% if link.url contains 'http' %}target="_blank" {% endif %}>{{ link.title }}</a>
+              {% else %}
+              <div class="navbar-item has-text-weight-bold has-dropdown is-hoverable">
+                <a class="navbar-link" href="{{ domain }}{{ link.url }}" {% if link.url contains 'http' %}target="_blank" {% endif %}>
+                  {{ link.title }}
+                </a>
+                <div class="navbar-dropdown is-primary" style="color:white;background-color:#e9541f;">
+                  {% for subnav in link.subnav %}
+                  <a class="navbar-item" href="{{ domain }}{{ subnav.url }}" {% if subnav.url contains 'http' %}target="_blank" {% endif %}>
+                    {{ subnav.title }}
+                  </a>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+              {% endfor %}
 
-      <div class="trigger">
-        {% for my_page in site.pages %}
-          {% if my_page.title %}
-          <a class="page-link" href="{{ my_page.url | prepend: site.baseurl }}">{{ my_page.title }}</a>
-          {% endif %}
-        {% endfor %}
-      </div>
-    </nav>
+              {% comment %} The code below dynamically
+              generates a sidebar nav of pages with `layout: page` in the front-matter. See readme for usage. {% endcomment %}
 
-  </div>
+              {% assign pages_list = site.pages | sort:"url" %} {% for node in pages_list %}
+              {% if node.title != null %}
+              {% if node.layout == "page" %}
+              {% unless node.exclude %}
+              <a class="navbar-item{% if page.url == node.url %} is-active{% endif %} has-text-weight-bold" href="{{ site.baseurl }}{{ node.url }}">{{ node.title }}</a>
+              {% endunless %}
+              {% endif %}
+              {% endif %}
+              {% endfor %}
+
+            </div>
+          </div>
+        </div>
+      </nav>
+    <!-- </div> -->
+  </section>
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+
+  // Get all "navbar-burger" elements
+  var $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+
+  // Check if there are any navbar burgers
+  if ($navbarBurgers.length > 0) {
+
+    // Add a click event on each of them
+    $navbarBurgers.forEach(function ($el) {
+      $el.addEventListener('click', function () {
+
+        // Get the target from the "data-target" attribute
+        var target = $el.dataset.target;
+        var $target = document.getElementById(target);
+
+        // Toggle the class on both the "navbar-burger" and the "navbar-menu"
+        $el.classList.toggle('is-active');
+        $target.classList.toggle('is-active');
+
+      });
+    });
+  }
+
+});
+  </script>
 
 </header>
