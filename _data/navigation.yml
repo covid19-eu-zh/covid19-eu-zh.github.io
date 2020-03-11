@@ -16,5 +16,8 @@ main:
   excerpt: "社区链接"
   subnav:
     - title: "Telegram"
-      url: https://t.me/covid19_eu_zh_c
+      url: https://t.me/s/covid19_eu_zh_c
       excerpt: "Telegram Channel"
+    - title: "GitHub"
+      url: https://github.com/covid19-eu-zh
+      excerpt: "GitHub"
