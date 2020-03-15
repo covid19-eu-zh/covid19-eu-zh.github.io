@@ -157,7 +157,14 @@ return function(PLOTS){
         url: baseurl + "covid-19-fr.csv",
         countryName: "法国",
         regionType: "大区",
-        datasetType: "covid19-eu-zh",
+        datasetType: "covid19-eu-zh@authority",
+    });
+
+    PLOTS["荷兰感染人数统计图(Y-对数)"] = async () => await doPlot({
+        url: baseurl + "covid-19-nl.csv",
+        countryName: "荷兰",
+        regionType: "省",
+        datasetType: "covid19-eu-zh@city",
     });
 
 };

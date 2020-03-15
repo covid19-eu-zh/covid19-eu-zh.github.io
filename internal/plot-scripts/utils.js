@@ -1,4 +1,4 @@
-define([], function(){
+define(["./zones.nl"], function(zonesNL){
 //////////////////////////////////////////////////////////////////////////////
 var ret = {};
 
@@ -7,14 +7,14 @@ function normalizePlaceName(n){
     n = n.replace(/[\-_'’"]/g, "").replace(/\s/g, "");
     n = n.replace("ü", "ue").replace("ä", "ae").replace("ö", "oe");
     n = n.replace("Î", "I").replace(/ô/g, "o").replace(/é/g, "e");
+    n = n.replace(/â/g, "a");
     n = n.toLowerCase();
     return n;
 }
 
 function normalizeStateName(n){
     n = normalizePlaceName(n);
-    console.debug(n);
-    return {
+    const map = {
         // Special, often ignored
         "sum": "sum",
         "repatriierte": "Repatriierte",
@@ -97,72 +97,16 @@ function normalizeStateName(n){
         "saintmartin": "Saint-Martin",
         "martinique": "Martinique",
         "guyane": "Guyane",
+    };
+    for(var admin in zonesNL){
+        zonesNL[admin].forEach(function(city){
+            map[normalizePlaceName(city)] = admin;
+        });
+    }
 
-    }[n];
+    return map[n];
 };
 ret.normalizeStateName = normalizeStateName;
-
-
-
-function franceDepartementToRegion(detail){
-    const regions = {
-        "Auvergne-Rhône-Alpes": [
-            "Ain", "La Balme-de-Sillingy", "Haute-Savoie",
-        ],
-        "Bourgogne-Franche-Comté": [
-            "Dijon",
-        ],
-        "Bretagne": [
-        ],
-        "Centre-Val de Loire": [
-        ],
-        "Corse": [
-            "Corse-du-Sud",
-        ],
-        "Grand Est": [
-        ],
-        "Hauts-de-France": [
-            "Aisne", "Oise",
-        ],
-        "Île-de-France": [
-            "Paris", "Essonne",
-        ],
-        "Normandie": [
-            "Seine-Maritime",
-        ],
-        "Nouvelle-Aquitaine": [
-        ],
-        "Occitanie": [
-        ],
-        "Pays de la Loire": [
-            "Maine-et-Loire",
-        ],
-        "Provence-Alpes-Côte d'Azur": [
-            "Var", "Nice", "Alpes-Maritimes",
-        ],
-    };
-    var regionsNormalized = {};
-    Object.keys(regions).forEach(function(r){
-        regionsNormalized[normalizePlaceName(r)] = r;
-        for(var i=0; i<regions[r].length; i++){
-            regions[r][i] = normalizePlaceName(regions[r][i]);
-        }
-    });
-
-    var place = detail.split(":")[0].trim(),
-        placeN = normalizePlaceName(place);
-    if(regionsNormalized[placeN] !== undefined){
-        return regionsNormalized[placeN];
-    }
-
-    for(var region in regions){
-        if(regions[region].indexOf(placeN) >= 0) return region;
-    }
-    
-
-    console.log(place);
-}
-
 
 
 
@@ -238,19 +182,25 @@ ret.parseCasesOfStatesCSV = function(csvdata, format){
         obj[datetime][statename] += number;
     }
 
-    if("covid19-eu-zh" == format){
+    var isOurFormat = /^covid19-eu-zh(@([a-z]+))?$/.exec(format);
+    if(isOurFormat){
+        var unknownStates = [];
+
         function onRow(cells){
-            var statename = cells["state"];
-            if(statename === undefined) statename = cells["authority"];
+            var placeIdentifier = isOurFormat[2];
+            if(placeIdentifier === undefined) placeIdentifier = ["state"];
+
+            var statename0 = cells[placeIdentifier], statename;
 
             var datetime = cells["datetime"],
                 casescount = parseInt(cells["cases"]),
                 deathscount = parseInt(cells["deaths"]);
 
-            console.debug("1" + statename);
-            statename = normalizeStateName(statename);
-            console.debug("2" + statename);
-            if(!statename) throw Error("State unknown: " + statename + JSON.stringify(cells));
+            statename = normalizeStateName(statename0);
+            if(!statename){
+                if(unknownStates.indexOf(statename0) < 0) unknownStates.push(statename0);
+                statename = "???";
+            }
             if([
                 "Repatriierte", "Metropolis", "Oversea", "sum"
             ].indexOf(statename) >= 0) return;
@@ -264,6 +214,8 @@ ret.parseCasesOfStatesCSV = function(csvdata, format){
             addCount(dataCases, datetime, statename, casescount);
         }
         readCSVWithHeader(csvdata, ",").forEach(onRow);
+        console.info("Following states unknown:");
+        console.info(unknownStates);
         
     } else if ("pcm-dpc" == format) {
         function onRow(cells){
