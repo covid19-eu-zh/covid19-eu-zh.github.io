@@ -4,16 +4,24 @@ var ret = {};
 
 
 function normalizePlaceName(n){
-    n = n.replace(/[\-_"]/g, "").replace(/\s/g, "");
+    n = n.replace(/[\-_'’"]/g, "").replace(/\s/g, "");
     n = n.replace("ü", "ue").replace("ä", "ae").replace("ö", "oe");
-    n = n.replace("Î", "I");
+    n = n.replace("Î", "I").replace(/ô/g, "o").replace(/é/g, "e");
     n = n.toLowerCase();
     return n;
 }
 
 function normalizeStateName(n){
     n = normalizePlaceName(n);
+    console.debug(n);
     return {
+        // Special, often ignored
+        "sum": "sum",
+        "repatriierte": "Repatriierte",
+        "oversea": "Oversea",
+        "metropolis": "Metropolis",
+
+
         // Deutschland
         "nordrheinwestfalen": "Nordrhein-Westfalen",
         "badenwuerttemberg" : "Baden-Württemberg",
@@ -43,7 +51,7 @@ function normalizeStateName(n){
         "salzburg": "Salzburg",
         "steiermark": "Steiermark",
 
-        // Italiy
+        // Italy
         "abruzzo": "Abruzzo",
         "basilicata": "Basilicata",
         "p.a.bolzano": "Bolzano",
@@ -67,7 +75,28 @@ function normalizeStateName(n){
         "umbria": "Umbria",
         "valled'aosta": "Valle d'Aosta",
         "veneto": "Veneto",
-        
+
+        // France
+        "auvergnerhonealpes": "Auvergne-Rhône-Alpes",
+        "bourgognefranchecomte": "Bourgogne-Franche-Comté",
+        "bretagne": "Bretagne",
+        "centrevaldeloire": "Centre-Val de Loire",
+        "corse": "Corse",
+        "grandest": "Grand Est",
+        "hautsdefrance": "Hauts-de-France",
+        "iledefrance": "Île-de-France",
+        "normandie": "Normandie",
+        "nouvelleaquitaine": "Nouvelle-Aquitaine",
+        "occitanie": "Occitanie",
+        "paysdelaloire": "Pays de la Loire",
+        "provencealpescotedazur": "Provence-Alpes-Côte d'Azur",
+        "mayotte": "Mayotte",
+        "lareunion": "La Réunion",
+        "guadeloupe": "Guadeloupe",
+        "saintbarthelemy": "Saint-Barthélémy",
+        "saintmartin": "Saint-Martin",
+        "martinique": "Martinique",
+        "guyane": "Guyane",
 
     }[n];
 };
@@ -164,7 +193,15 @@ ret.getColor = getColor;
 
 
 
-
+/*function getCounter(){
+    var sum = 0;
+    function counterCaller(add){
+        if(undefined === add) return sum;
+        sum += add;
+        return sum;
+    }
+    return counterCaller;
+}*/
 
 function readCSVWithHeader(csvdata, splitter){
     if(!splitter) splitter = ",";
@@ -193,24 +230,38 @@ ret.parseCasesOfStatesCSV = function(csvdata, format){
     // `format` is dependent upon csv source:
     //   1. `covid19-eu-zh`: our own data format
     //   2. `pcm-dpc`: https://github.com/pcm-dpc/COVID-19/tree/master/dati-province
-    const data = {}, states = [];
+    const dataCases = {}, states = [], dataDeaths = {};
+
+    function addCount(obj, datetime, statename, number){
+        if(!obj[datetime]) obj[datetime] = {};
+        if(obj[datetime][statename] === undefined) obj[datetime][statename] = 0;
+        obj[datetime][statename] += number;
+    }
 
     if("covid19-eu-zh" == format){
         function onRow(cells){
-            var datetime = cells["datetime"],
-                statename = cells["state"]
-                casescount = parseInt(cells["cases"]);
+            var statename = cells["state"];
+            if(statename === undefined) statename = cells["authority"];
 
-            if(statename == "Repatriierte" || statename == "sum" || statename == "state") return;
+            var datetime = cells["datetime"],
+                casescount = parseInt(cells["cases"]),
+                deathscount = parseInt(cells["deaths"]);
+
+            console.debug("1" + statename);
             statename = normalizeStateName(statename);
-            if(!statename) throw Error("State unknown: " + row);
+            console.debug("2" + statename);
+            if(!statename) throw Error("State unknown: " + statename + JSON.stringify(cells));
+            if([
+                "Repatriierte", "Metropolis", "Oversea", "sum"
+            ].indexOf(statename) >= 0) return;
             if(states.indexOf(statename) < 0) states.push(statename);
 
             datetime = new Date(datetime + 'Z').getTime() / 1000;
             if(isNaN(datetime)) return;
 
-            if(!data[datetime]) data[datetime] = {};
-            data[datetime][statename] = casescount;
+            /*if(!dataCases[datetime]) data[datetime] = {};
+            dataCases[datetime][statename] = casescount;*/
+            addCount(dataCases, datetime, statename, casescount);
         }
         readCSVWithHeader(csvdata, ",").forEach(onRow);
         
@@ -218,7 +269,8 @@ ret.parseCasesOfStatesCSV = function(csvdata, format){
         function onRow(cells){
             var datetime = cells["data"],
                 statename = cells["denominazione_regione"],
-                casescount = parseInt(cells["totale_casi"]);
+                casescount = parseInt(cells["totale_casi"]),
+                deathscount = parseInt(cells["deceduti"]);
 
             if(statename == "denominazione_regione") return;
             statename = normalizeStateName(statename);
@@ -228,12 +280,15 @@ ret.parseCasesOfStatesCSV = function(csvdata, format){
             datetime = new Date(datetime + 'Z').getTime() / 1000;
             if(isNaN(datetime)) return;
 
-            if(!data[datetime]) data[datetime] = {};
+            /*if(!data[datetime]) data[datetime] = {};
             if(undefined === data[datetime][statename]){
-                data[datetime][statename] = 0;
+                dataCases[datetime][statename] = 0;
             }
-            data[datetime][statename] += casescount;
+            dataCases[datetime][statename] += casescount;*/
+            addCount(dataCases, datetime, statename, casescount);
+            addCount(dataDeaths, datetime, statename, deathscount);
         }
+        console.debug(dataDeaths);
         readCSVWithHeader(csvdata, ",").forEach(onRow);
 
     } else if ("lefigaro.fr" == format){
@@ -271,7 +326,7 @@ ret.parseCasesOfStatesCSV = function(csvdata, format){
             data[datetime] = {};
             for(var region in deltas[datetime]){
                 snapshot[region] += deltas[datetime][region];
-                data[datetime][region] = snapshot[region];
+                dataCases[datetime][region] = snapshot[region];
             }
         });
 
@@ -280,7 +335,11 @@ ret.parseCasesOfStatesCSV = function(csvdata, format){
     } else {
         throw Error("Unknown format specification.");
     }
-    return [data, states];
+    return {
+        cases: dataCases,
+        deaths: dataDeaths,
+        states: states,
+    };
 }
 
 

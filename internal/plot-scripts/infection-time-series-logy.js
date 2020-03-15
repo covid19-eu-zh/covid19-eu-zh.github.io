@@ -15,8 +15,8 @@ function CSVGen(input, datasetType){
 
 
     var parsed = utils.parseCasesOfStatesCSV(input, datasetType);
-    var data = parsed[0];
-    ORDER_OF_STATES = parsed[1];
+    var data = parsed.cases;
+    ORDER_OF_STATES = parsed.states;
 
     var MAX = 0;
     for(var datetime in data){
@@ -146,11 +146,20 @@ return function(PLOTS){
     });
 
     PLOTS["意大利感染人数统计图(Y-对数)"] = async () => await doPlot({
-        url: "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province.csv",
+//        url: "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province.csv",
+        url: "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv",
         countryName: "意大利",
         regionType: "大区",
         datasetType: "pcm-dpc",
     });
+
+    PLOTS["法国感染人数统计图(Y-对数)"] = async () => await doPlot({
+        url: baseurl + "covid-19-fr.csv",
+        countryName: "法国",
+        regionType: "大区",
+        datasetType: "covid19-eu-zh",
+    });
+
 };
 
 //////////////////////////////////////////////////////////////////////////////

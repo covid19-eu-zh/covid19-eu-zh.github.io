@@ -17,13 +17,23 @@ var CUTOFF_STATE = ORDER_OF_STATES[0];
 function findCutoffState(data){
     var ts = Object.keys(data);
     ts.sort();
-    var d = data[ts[ts.length-1]];
-    var cutoffSize = d[ORDER_OF_STATES[0]] / 20;
+    var d = data[ts[ts.length-1]]; // newest data
+    var sum = 0;
+    for(var i=0; i<ORDER_OF_STATES.length; i++) sum += d[ORDER_OF_STATES[i]];
+    var cutoffSize = sum * 0.9;
+
+    //var cutoffSize = d[ORDER_OF_STATES[0]] / 20;
+
     for(var i=0; i<ORDER_OF_STATES.length; i++){
-        if(d[ORDER_OF_STATES[i]] <= cutoffSize){
+        cutoffSize -= d[ORDER_OF_STATES[i]];
+        if(cutoffSize <= 0) {
             CUTOFF_STATE = ORDER_OF_STATES[i];
             return;
         }
+/*        if(d[ORDER_OF_STATES[i]] <= cutoffSize){
+            CUTOFF_STATE = ORDER_OF_STATES[i];
+            return;
+        }*/
     }
 }
 
@@ -57,8 +67,8 @@ function stackedCSVGen(input, datasetType){
        which is good for stacked chart.*/
 
     var parsed = utils.parseCasesOfStatesCSV(input, datasetType);
-    var data = parsed[0];
-    ORDER_OF_STATES = parsed[1];
+    var data = parsed.cases;
+    ORDER_OF_STATES = parsed.states;
 
     var timestamps = Object.keys(data);
 
@@ -128,7 +138,7 @@ async function doPlot(options){ // url, countryName, datasetType){
         set format x "%m月\\n%d日"
         set style fill solid 1.0
 
-        set key left nobox noopaque noautotitle maxrows 4
+        set key left nobox noopaque noautotitle maxrows 6
         set ytics mirror
         set y2tics
         set grid ytics xtics
@@ -182,17 +192,25 @@ return function(PLOTS){
     });
 
     PLOTS["意大利感染人数统计图(堆积)"] = async () => await doPlot({
-        url: "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province.csv",
+//        url: "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province.csv",
+        url: "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv",
         countryName: "意大利",
         regionType: "大区",
         datasetType: "pcm-dpc",
     });
 
-    PLOTS["法国感染人数统计图(堆积)"] = async () => await doPlot({
+/*    PLOTS["法国感染人数统计图(堆积)"] = async () => await doPlot({
         url: "https://www.lefigaro.fr/fig-data/coronavirus/data/data.csv",
         countryName: "法国",
         regionType: "大区",
         datasetType: "lefigaro.fr",
+    });*/
+
+    PLOTS["法国感染人数统计图(堆积)"] = async () => await doPlot({
+        url: baseurl + "covid-19-fr.csv",
+        countryName: "法国",
+        regionType: "大区",
+        datasetType: "covid19-eu-zh",
     });
 
 };
