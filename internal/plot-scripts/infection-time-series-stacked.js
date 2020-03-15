@@ -187,6 +187,14 @@ return function(PLOTS){
         regionType: "大区",
         datasetType: "pcm-dpc",
     });
+
+    PLOTS["法国感染人数统计图(堆积)"] = async () => await doPlot({
+        url: "https://www.lefigaro.fr/fig-data/coronavirus/data/data.csv",
+        countryName: "法国",
+        regionType: "大区",
+        datasetType: "lefigaro.fr",
+    });
+
 };
 
 
