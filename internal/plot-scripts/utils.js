@@ -73,7 +73,7 @@ function normalizeStateName(n){
         "p.a.trento": "Trento",
         "trento": "Trento",
         "umbria": "Umbria",
-        "valled'aosta": "Valle d'Aosta",
+        "valledaosta": "Valle d'Aosta",
         "veneto": "Veneto",
 
         // France
