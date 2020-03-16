@@ -12,11 +12,11 @@ define([
 var ORDER_OF_STATES = [];
 var OUTPUT_COLS = 0;
 
-function CSVGen(input, datasetType){
+async function CSVGen(input, datasetType){
     var data = {};
 
 
-    var parsed = utils.parseCasesOfStatesCSV(input, datasetType);
+    var parsed = await utils.parseCasesOfStatesCSV(input, datasetType);
     var data = parsed.cases;
     ORDER_OF_STATES = parsed.states;
 
@@ -78,7 +78,7 @@ async function doPlot(options){ //url, countryName, datasetType){
 
     const files = {
         // data files being fed to GNUPLOT
-        "data.csv": CSVGen(dataset, options.datasetType)
+        "data.csv": await CSVGen(dataset, options.datasetType)
     };
 
 

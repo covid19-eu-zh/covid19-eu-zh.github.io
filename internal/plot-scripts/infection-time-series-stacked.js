@@ -63,13 +63,13 @@ function trimStackedRowData(stackedNumbers){
 
 
 
-function stackedCSVGen(input, datasetType){
+async function stackedCSVGen(input, datasetType){
     /* Format the data collected from project "covid19-eu-data", as:
         datetime,state,total_of_state_1,total_of_state_1+2,total_of_state_1+2+3
     
        which is good for stacked chart.*/
 
-    var parsed = utils.parseCasesOfStatesCSV(input, datasetType);
+    var parsed = await utils.parseCasesOfStatesCSV(input, datasetType);
     var data = parsed.cases;
     ORDER_OF_STATES = parsed.states;
 
@@ -126,7 +126,7 @@ async function doPlot(options){ // url, countryName, datasetType){
 
     const files = {
         // data files being fed to GNUPLOT
-        "data.csv": stackedCSVGen(dataset, options.datasetType)
+        "data.csv": await stackedCSVGen(dataset, options.datasetType)
     };
 
 
@@ -141,7 +141,7 @@ async function doPlot(options){ // url, countryName, datasetType){
         set format x "%m月\\n%d日"
         set style fill solid 1.0
 
-        set key left nobox noopaque noautotitle maxrows 6
+        set key left nobox noopaque noautotitle maxrows 8
         set ytics mirror
         set y2tics
         set grid ytics xtics
