@@ -1,6 +1,9 @@
+---
+---
+
 define([
     "gnuplot_update",
-    "plot-scripts/utils",
+    "./utils",
 ], function(
     GNUPLOT_UPDATE,
     utils
@@ -174,26 +177,22 @@ async function doPlot(options){ // url, countryName, datasetType){
 
 return function(PLOTS){
 
-    const baseurl = "https://covid19-eu-data-cache.now.sh/";
-
     PLOTS["德国感染人数统计图(堆积)"] = async () => await doPlot({
-        //url: "https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-de.csv",
-        url: baseurl + "covid-19-de.csv",
+        url: "{{ site.dataset["covid-19-de"] }}",
         countryName: "德国",
         regionType: "州",
         datasetType: "covid19-eu-zh",
     });
 
     PLOTS["奥地利感染人数统计图(堆积)"] = async () => await doPlot({
-        url: baseurl + "covid-19-at.csv",
+        url: "{{ site.dataset["covid-19-at"] }}",
         countryName: "奥地利",
         regionType: "州",
         datasetType: "covid19-eu-zh",
     });
 
     PLOTS["意大利感染人数统计图(堆积)"] = async () => await doPlot({
-//        url: "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province.csv",
-        url: "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv",
+        url: "{{ site.dataset["italy-dpc"] }}",
         countryName: "意大利",
         regionType: "大区",
         datasetType: "pcm-dpc",
@@ -207,14 +206,14 @@ return function(PLOTS){
     });*/
 
     PLOTS["法国感染人数统计图(堆积)"] = async () => await doPlot({
-        url: baseurl + "covid-19-fr.csv",
+        url: "{{ site.dataset["covid-19-fr"] }}",
         countryName: "法国",
         regionType: "大区",
         datasetType: "covid19-eu-zh@authority",
     });
 
     PLOTS["荷兰感染人数统计图(堆积)"] = async () => await doPlot({
-        url: baseurl + "covid-19-nl.csv",
+        url: "{{ site.dataset["covid-19-nl"] }}",
         countryName: "荷兰",
         regionType: "省",
         datasetType: "covid19-eu-zh@city",

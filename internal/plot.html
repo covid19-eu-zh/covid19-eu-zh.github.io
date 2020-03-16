@@ -34,9 +34,11 @@ requirejs.config({
 require([
     "jquery",
     "plots",
+    "summaries",
 ], function(
     $,
     PLOTS,
+    SUMMARIES
 ){
 
     for(var name in PLOTS){
@@ -44,6 +46,12 @@ require([
             PLOTS[$(this).data("name")]();
         }).appendTo($("<div>").appendTo("#functions"));
     };
+
+    for(var name in SUMMARIES){
+        $("<button>", {"text": name}).data("name", name).click(function(){
+            PLOTS[$(this).data("name")]();
+        }).appendTo($("<div>").appendTo("#functions"));
+    }
 
     function downloadURI(uri, name) {
       var link = document.createElement("a");
