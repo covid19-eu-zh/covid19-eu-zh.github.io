@@ -1,10 +1,16 @@
-define(["./zones.nl"], function(zonesNL){
+define([
+    "papaparse.min",
+    "./zones.nl"
+], function(
+    papa, // CSV parser
+    zonesNL
+){
 //////////////////////////////////////////////////////////////////////////////
 var ret = {};
 
 
 function normalizePlaceName(n){
-    n = n.replace(/[\-_'’"]/g, "").replace(/\s/g, "");
+    n = n.replace(/[\-\._'’\,"]/g, "").replace(/\s/g, "");
     n = n.replace("ü", "ue").replace("ä", "ae").replace("ö", "oe");
     n = n.replace("Î", "I").replace(/ô/g, "o").replace(/é/g, "e");
     n = n.replace(/â/g, "a");
@@ -20,6 +26,7 @@ function normalizeStateName(n){
         "repatriierte": "Repatriierte",
         "oversea": "Oversea",
         "metropolis": "Metropolis",
+        "other": "Other",
 
 
         // Deutschland
@@ -54,7 +61,7 @@ function normalizeStateName(n){
         // Italy
         "abruzzo": "Abruzzo",
         "basilicata": "Basilicata",
-        "p.a.bolzano": "Bolzano",
+        "pabolzano": "Bolzano",
         "bolzano": "Bolzano",
         "calabria": "Calabria",
         "campania": "Campania",
@@ -70,7 +77,7 @@ function normalizeStateName(n){
         "sardegna": "Sardegna",
         "sicilia": "Sicilia",
         "toscana": "Toscana",
-        "p.a.trento": "Trento",
+        "patrento": "Trento",
         "trento": "Trento",
         "umbria": "Umbria",
         "valledaosta": "Valle d'Aosta",
@@ -97,6 +104,13 @@ function normalizeStateName(n){
         "saintmartin": "Saint-Martin",
         "martinique": "Martinique",
         "guyane": "Guyane",
+
+        // Netherlande
+        "nuenengerwenennederwetten": "Nuenen, Gerwen en Nederwetten",
+        "bergen(l)": "Limburg",
+        "hengelo(o)": "Overijssel",
+        "sgravenhage": "Zuid-Holland",
+        "bergen(nh)": "Noord-Holland",
     };
     for(var admin in zonesNL){
         zonesNL[admin].forEach(function(city){
@@ -147,28 +161,17 @@ ret.getColor = getColor;
     return counterCaller;
 }*/
 
-function readCSVWithHeader(csvdata, splitter){
-    if(!splitter) splitter = ",";
-    const ret = [];
-    lines = csvdata.split("\n");
-    headers = null;
-    lines.forEach(function(line){
-        if(!line.trim()) return;
-        var cells = line.split(splitter);
-        if(!headers){
-            headers = cells;
-        } else {
-            var x = {};
-            for(var i=0; i<cells.length; i++){
-                x[headers[i]] = cells[i];
-            }
-            ret.push(x);
-        }
+async function readCSVWithHeader(csvdata, options, onRow){
+    return new Promise(function(resolve, reject){
+        papa.parse(csvdata, {
+            header: true,
+            step: onRow,
+            complete: resolve,
+        });
     });
-    return ret;
 }
 
-ret.parseCasesOfStatesCSV = function(csvdata, format){
+ret.parseCasesOfStatesCSV = async function(csvdata, format){
     // Parse a csv and returns
     //    [ data[datetime][statename] := number, [statenames]  ]
     // `format` is dependent upon csv source:
@@ -187,6 +190,9 @@ ret.parseCasesOfStatesCSV = function(csvdata, format){
         var unknownStates = [];
 
         function onRow(cells){
+            cells = cells.data;
+            console.log(cells);
+
             var placeIdentifier = isOurFormat[2];
             if(placeIdentifier === undefined) placeIdentifier = ["state"];
 
@@ -196,13 +202,16 @@ ret.parseCasesOfStatesCSV = function(csvdata, format){
                 casescount = parseInt(cells["cases"]),
                 deathscount = parseInt(cells["deaths"]);
 
+            if(datetime === undefined || casescount === undefined) return;
+
             statename = normalizeStateName(statename0);
             if(!statename){
+                throw Error("Unknown state: " + statename0 + " @ " + JSON.stringify(cells));
                 if(unknownStates.indexOf(statename0) < 0) unknownStates.push(statename0);
                 statename = "???";
             }
             if([
-                "Repatriierte", "Metropolis", "Oversea", "sum"
+                "Repatriierte", "Metropolis", "Oversea", "sum", "Other",
             ].indexOf(statename) >= 0) return;
             if(states.indexOf(statename) < 0) states.push(statename);
 
@@ -213,18 +222,21 @@ ret.parseCasesOfStatesCSV = function(csvdata, format){
             dataCases[datetime][statename] = casescount;*/
             addCount(dataCases, datetime, statename, casescount);
         }
-        readCSVWithHeader(csvdata, ",").forEach(onRow);
+        await readCSVWithHeader(csvdata, ",", onRow);
         console.info("Following states unknown:");
         console.info(unknownStates);
         
     } else if ("pcm-dpc" == format) {
         function onRow(cells){
+            cells = cells.data;
+
             var datetime = cells["data"],
                 statename = cells["denominazione_regione"],
                 casescount = parseInt(cells["totale_casi"]),
                 deathscount = parseInt(cells["deceduti"]);
 
-            if(statename == "denominazione_regione") return;
+            if(datetime === undefined || statename === undefined) return;
+
             statename = normalizeStateName(statename);
             if(!statename) throw Error("State unknown: " + JSON.stringify(cells));
             if(states.indexOf(statename) < 0) states.push(statename);
@@ -241,48 +253,7 @@ ret.parseCasesOfStatesCSV = function(csvdata, format){
             addCount(dataDeaths, datetime, statename, deathscount);
         }
         console.debug(dataDeaths);
-        readCSVWithHeader(csvdata, ",").forEach(onRow);
-
-    } else if ("lefigaro.fr" == format){
-        var deltas = {};
-
-        function onDayDelta(row){
-            var cells = row.trim().split(";");
-            if(cells.length < 6) return;
-            
-            var date = cells[2], detail = cells[4];
-            if(detail == "detail") return;
-            var region = franceDepartementToRegion(detail);
-            var count = parseInt(cells[3]);
-
-            var datetime = new Date(
-                "2020-" + date.slice(-2) + "-" + date.slice(0,2)
-            ).getTime() / 1000;
-            if(states.indexOf(region) < 0) states.push(region);
-
-            if(!deltas[datetime]) deltas[datetime] = {};
-            if(undefined == deltas[datetime][region]){
-                deltas[datetime][region] = 0;
-            }
-            deltas[datetime][region] += count;
-        }
-        csvdata.split("\n").forEach(onDayDelta);
-
-        // cumulate cases from daily deltas
-
-        var datetimes = Object.keys(deltas);
-        datetimes.sort(); // earlier -> later
-        var snapshot = {}; // cumulated cases for a given time
-        states.forEach(function(region){ snapshot[region] = 0 });
-        datetimes.forEach(function(datetime){
-            data[datetime] = {};
-            for(var region in deltas[datetime]){
-                snapshot[region] += deltas[datetime][region];
-                dataCases[datetime][region] = snapshot[region];
-            }
-        });
-
-        console.log(data, states);
+        await readCSVWithHeader(csvdata, ",", onRow);
 
     } else {
         throw Error("Unknown format specification.");
