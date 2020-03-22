@@ -181,14 +181,21 @@ return function(PLOTS){
         url: "{{ site.dataset["covid-19-de"] }}",
         countryName: "德国",
         regionType: "州",
-        datasetType: "covid19-eu-zh",
+        datasetType: "covid19-eu-zh@nuts_1",
     });
 
     PLOTS["奥地利感染人数统计图(堆积)"] = async () => await doPlot({
         url: "{{ site.dataset["covid-19-at"] }}",
         countryName: "奥地利",
         regionType: "州",
-        datasetType: "covid19-eu-zh",
+        datasetType: "covid19-eu-zh@nuts_2",
+    });
+
+    PLOTS["瑞士感染人数统计图(堆积)"] = async () => await doPlot({
+        url: "{{ site.dataset["covid-19-ch"] }}",
+        countryName: "瑞士",
+        regionType: "州",
+        datasetType: "covid19-eu-zh@nuts_2",
     });
 
     PLOTS["意大利感染人数统计图(堆积)"] = async () => await doPlot({
@@ -198,26 +205,20 @@ return function(PLOTS){
         datasetType: "pcm-dpc",
     });
 
-/*    PLOTS["法国感染人数统计图(堆积)"] = async () => await doPlot({
-        url: "https://www.lefigaro.fr/fig-data/coronavirus/data/data.csv",
-        countryName: "法国",
-        regionType: "大区",
-        datasetType: "lefigaro.fr",
-    });*/
-
     PLOTS["法国感染人数统计图(堆积)"] = async () => await doPlot({
         url: "{{ site.dataset["covid-19-fr"] }}",
         countryName: "法国",
         regionType: "大区",
-        datasetType: "covid19-eu-zh@authority",
+        datasetType: "covid19-eu-zh@nuts_2",
     });
 
     PLOTS["荷兰感染人数统计图(堆积)"] = async () => await doPlot({
         url: "{{ site.dataset["covid-19-nl"] }}",
         countryName: "荷兰",
         regionType: "省",
-        datasetType: "covid19-eu-zh@city",
+        datasetType: "covid19-eu-zh@lau",
     });
+
 };
 
 

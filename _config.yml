@@ -58,6 +58,7 @@ exclude: ['README.md','README-minima.md','History.markdown', 'Gemfile.lock', 'Ge
 dataset:
     covid-19-de: "https://covid19-eu-data-cache.now.sh/covid-19-de.csv"
     covid-19-at: "https://covid19-eu-data-cache.now.sh/covid-19-at.csv"
+    covid-19-ch: "https://covid19-eu-data-cache.now.sh/covid-19-ch.csv"
     covid-19-fr: "https://covid19-eu-data-cache.now.sh/covid-19-fr.csv"
     covid-19-nl: "https://covid19-eu-data-cache.now.sh/covid-19-nl.csv"
     italy-dpc:   "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv"

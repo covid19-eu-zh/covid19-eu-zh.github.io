@@ -10,7 +10,8 @@ var ret = {};
 
 
 function normalizePlaceName(n){
-    n = n.replace(/[\-\._'’\,"]/g, "").replace(/\s/g, "");
+    n = n.replace(/[^0-9a-zA-ZäüößÎôéâ\(\)]/g, "");
+    //n = n.replace(/[\-\._'’\,"]/g, "").replace(/\s/g, "");
     n = n.replace("ü", "ue").replace("ä", "ae").replace("ö", "oe");
     n = n.replace("Î", "I").replace(/ô/g, "o").replace(/é/g, "e");
     n = n.replace(/â/g, "a");
@@ -20,6 +21,7 @@ function normalizePlaceName(n){
 
 function normalizeStateName(n){
     n = normalizePlaceName(n);
+    console.debug(n);
     const map = {
         // Special, often ignored
         "sum": "sum",
@@ -57,6 +59,35 @@ function normalizeStateName(n){
         "tirol": "Tirol",
         "salzburg": "Salzburg",
         "steiermark": "Steiermark",
+
+        // Schweiz
+        "nw": "Nidwalden",
+        "ow": "Obwalden",
+        "sh": "Schaffhausen",
+        "ur": "Uri",
+        "gl": "Glarus",
+        "ai": "Appenzell Innerrhoden",
+        "ar": "Appenzell Ausserrohden",
+        "tg": "Thurgau",
+        "ju": "Jura",
+        "sg": "St. Gallen",
+        "so": "Solothurn",
+        "lu": "Luzern",
+        "vs": "Wallis",
+        "zg": "Zug",
+        "fr": "Freiburg",
+        "sz": "Schwyz",
+        "ne": "Neuenburg",
+        "bl": "Basel-Landschaft",
+        "ag": "Aargau",
+        "gr": "Graubünden",
+        "ge": "Genf",
+        "bs": "Basel-Stadt",
+        "be": "Bern",
+        "vd": "Waadt",
+        "zh": "Zürich",
+        "ti": "Tessin",
+
 
         // Italy
         "abruzzo": "Abruzzo",
@@ -185,7 +216,7 @@ ret.parseCasesOfStatesCSV = async function(csvdata, format){
         obj[datetime][statename] += number;
     }
 
-    var isOurFormat = /^covid19-eu-zh(@([a-z]+))?$/.exec(format);
+    var isOurFormat = /^covid19-eu-zh(@([a-z_0-9]+))?$/.exec(format);
     if(isOurFormat){
         var unknownStates = [];
 
