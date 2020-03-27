@@ -5,8 +5,11 @@ layout: page
 exclude: true
 ---
 
-<button id="saveimage" disabled="disabled">保存为图片</button>
+<div id="functions" class="columns is-multiline">
+</div>
+<button id="saveimage" disabled="disabled" class="button is-primary">保存为图片</button>
 
+<hr />
 <div>
     <img id="gnuplotImage"></img>
     <canvas id="gnuplotCanvas" style="display:none"></canvas>
@@ -14,10 +17,7 @@ exclude: true
 </div>
 
 <br />
-<hr />
 <br />
-<div id="functions">
-</div>
 
 <script
     src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"
@@ -42,15 +42,17 @@ require([
 ){
 
     for(var name in PLOTS){
-        $("<button>", {"text": name}).data("name", name).click(function(){
+        var newDom = $("<div>").appendTo("#functions").addClass("column")
+        $("<button>", {"text": name}).data("name", name).addClass("button is-link").click(function(){
             PLOTS[$(this).data("name")]();
-        }).appendTo($("<div>").appendTo("#functions"));
+        }).appendTo(newDom);
     };
 
     for(var name in SUMMARIES){
-        $("<button>", {"text": name}).data("name", name).click(function(){
+        var newDom = $("<div>").appendTo("#functions").addClass("column")
+        $("<button>", {"text": name}).data("name", name).addClass("button is-link").click(function(){
             SUMMARIES[$(this).data("name")]();
-        }).appendTo($("<div>").appendTo("#functions"));
+        }).appendTo(newDom);
     }
 
     function downloadURI(uri, name) {
