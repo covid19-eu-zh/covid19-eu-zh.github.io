@@ -222,7 +222,6 @@ ret.parseCasesOfStatesCSV = async function(csvdata, format){
 
         function onRow(cells){
             cells = cells.data;
-            console.log(cells);
 
             var placeIdentifier = isOurFormat[2];
             if(placeIdentifier === undefined) placeIdentifier = ["state"];
@@ -237,7 +236,7 @@ ret.parseCasesOfStatesCSV = async function(csvdata, format){
 
             statename = normalizeStateName(statename0);
             if(!statename){
-                throw Error("Unknown state: " + statename0 + " @ " + JSON.stringify(cells));
+                console.error("Unknown state: " + statename0 + " @ " + JSON.stringify(cells));
                 if(unknownStates.indexOf(statename0) < 0) unknownStates.push(statename0);
                 statename = "???";
             }
