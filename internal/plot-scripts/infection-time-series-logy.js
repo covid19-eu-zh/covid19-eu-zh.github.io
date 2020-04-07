@@ -18,7 +18,9 @@ async function CSVGen(input, datasetType){
 
     var parsed = await utils.parseCasesOfStatesCSV(input, datasetType);
     var data = parsed.cases;
-    ORDER_OF_STATES = parsed.states;
+    // clean up the unknown state
+    Object.values(data).forEach(obj => delete obj['???'])
+    ORDER_OF_STATES = parsed.states.filter(state => state!=='???');
 
     var MAX = 0;
     for(var datetime in data){
@@ -73,7 +75,7 @@ async function CSVGen(input, datasetType){
 
 async function doPlot(options){ //url, countryName, datasetType){
     utils.getColor.reset();
-    
+
     const dataset = await $.get(options.url);
 
     const files = {
@@ -120,7 +122,7 @@ async function doPlot(options){ //url, countryName, datasetType){
     instruction += "plot " + plotcmd.join(", ");
 
 
-    console.log(instruction);
+    // console.log(instruction);
     
     GNUPLOT_UPDATE(files, instruction); 
 };

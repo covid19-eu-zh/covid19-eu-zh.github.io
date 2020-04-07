@@ -7,6 +7,8 @@ exclude: true
 
 <div id="functions" class="columns is-multiline">
 </div>
+<div id="summeries" class="columns is-multiline">
+</div>
 <button id="saveimage" disabled="disabled" class="button is-primary">保存为图片</button>
 
 <hr />
@@ -41,15 +43,20 @@ require([
     SUMMARIES
 ){
 
+    function timeout(t) {
+        return new Promise((resolve, reject)=> setTimeout(resolve, t))
+    }
+
     for(var name in PLOTS){
         var newDom = $("<div>").appendTo("#functions").addClass("column")
-        $("<button>", {"text": name}).data("name", name).addClass("button is-link").click(function(){
-            PLOTS[$(this).data("name")]();
+        $("<button>", {"text": name}).data("name", name).addClass("button is-link").click(async function(){
+            
+            await PLOTS[$(this).data("name")]();
         }).appendTo(newDom);
     };
 
     for(var name in SUMMARIES){
-        var newDom = $("<div>").appendTo("#functions").addClass("column")
+        var newDom = $("<div>").appendTo("#summeries").addClass("column")
         $("<button>", {"text": name}).data("name", name).addClass("button is-link").click(function(){
             SUMMARIES[$(this).data("name")]();
         }).appendTo(newDom);

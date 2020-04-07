@@ -71,8 +71,9 @@ async function stackedCSVGen(input, datasetType){
 
     var parsed = await utils.parseCasesOfStatesCSV(input, datasetType);
     var data = parsed.cases;
-    ORDER_OF_STATES = parsed.states;
-
+    // clean up the unknown state
+    Object.values(data).forEach(obj => delete obj['???'])
+    ORDER_OF_STATES = parsed.states.filter(state => state!=='???');
     var timestamps = Object.keys(data);
 
     timestamps.sort();
@@ -169,7 +170,6 @@ async function doPlot(options){ // url, countryName, datasetType){
     instruction += "plot " + plotcmd.join(", ");
 
 
-    console.log(instruction);
     
     GNUPLOT_UPDATE(files, instruction); 
 };
